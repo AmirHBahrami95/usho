@@ -6,14 +6,15 @@ import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
+import java.sql.Timestamp;
+
 @Data
 @Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class User{
-	private String uname;
-	private String email;
-	private String phoneNo;
-	private boolean isActive;
-	private Role role;
+public class UrlAccess{
+	private Url url; // easier for joins
+	private String ip;
+	private String xForwardedFor;
+	private Timestamp visitTs;
 }

@@ -13,41 +13,40 @@ import java.util.List;
 import com.amir.usho.model.Url;
 import com.amir.usho.db.UrlRepo;
 import com.amir.usho.exc.WebException;
+import com.amir.usho.service.UrlService;
 
 @RestController
 @RequestMapping(path="/api/url")
 public class UrlController{
 
 	@Autowired
-	private UrlRepo urlRepo;
+	private UrlService urlService;
 	
 	@GetMapping(path="/{id}",produces="application/json")
 	public ResponseEntity<Url> getUrl(@PathVariable String id) throws WebException{
-		Optional<Url> o=Optional.empty();
-		long idLong=-1l;
+		Url u=new Url();
 		try{
-			idLong=Long.valueOf(id);
-			o=urlRepo.findById(idLong);
+			u.setId(Long.valueOf(id));
 		}catch(NumberFormatException nfe){
-			throw WebException.of(400,"Id must be numeric");
+			throw WebException.of(400,"Wrong Id Format");
 		}
-
+		Optional o=urlService.findUrlById(u);
 		if(!o.isPresent())
 			throw WebException.of(404,"Not Found");
-
 		return ResponseEntity.of(o);
 	}
 	
 	/**/
 	@GetMapping(path="/all",produces="application/json")
 	public List<Url> getAllUrls(){
-		return urlRepo.findAll();
+		return urlService.findAllUrls();
 	}
 
 	@GetMapping(path="/ping",produces="text/plain")
 	public String pong(){
 		return "pong";
 	}
+
 	/**/
 
 	/*

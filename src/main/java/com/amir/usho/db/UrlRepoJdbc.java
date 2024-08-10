@@ -13,6 +13,7 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.sql.ResultSet;
 import java.sql.Types;
 
@@ -29,13 +30,13 @@ public class UrlRepoJdbc implements UrlRepo{
 	@Autowired private JdbcTemplate jd;
 
 	@Override
-	public Optional<Url> findById(long id){
+	public Optional<Url> findById(Url u){
 		PreparedStatementCreatorFactory pscf= 
 			new PreparedStatementCreatorFactory(
 				"SELECT * FROM url WHERE id=?",Types.INTEGER);
 		PreparedStatementCreator psc=
 			pscf.newPreparedStatementCreator(
-				Arrays.asList(id));
+				Arrays.asList(u.getId()));
 		List<Url> us=jd.query(psc,this::rowToUrl);
 		return us.size()<=0?
 			Optional.empty():
@@ -72,19 +73,15 @@ public class UrlRepoJdbc implements UrlRepo{
 	
 	@Override
 	public Optional<Url> save(Url u){
-		
-		// add-new
 		if(u.getId()==-1 || u.getId()==0)
-			return addNew(u);
-
-		// update existing
+			return insert(u);
 		else return update(u);
 	}
 
-	private Optional<Url> addNew(Url u){
+	private Optional<Url> insert(Url u){
 		PreparedStatementCreatorFactory pscf=
 			new PreparedStatementCreatorFactory(
-				"INSERT INTO url(src,dest,namespace) VALUES(?,?,?)",
+				"INSERT INTO url(src,dest,namespace,accessScope) VALUES(?,?,?)",
 				Types.VARCHAR,Types.VARCHAR,Types.VARCHAR
 			);
 
@@ -100,8 +97,12 @@ public class UrlRepoJdbc implements UrlRepo{
 	}
 
 	private Optional<Url> update(Url u){
+		
+		if(u.getAccessScope()==null)
+			u.setAccessScope("public");
+
 		PreparedStatementCreatorFactory pscf= new PreparedStatementCreatorFactory(
-			"UPDATE url SET src=?, dest=?,namespace=? WHERE id=? VALUES(?,?,?)",
+			"UPDATE url SET src=?, dest=?,namespace=? WHERE id=?",
 				Types.VARCHAR,Types.VARCHAR,Types.VARCHAR,Types.INTEGER
 		);
 
@@ -116,16 +117,17 @@ public class UrlRepoJdbc implements UrlRepo{
 	}
 
 	@Override
-	public boolean deleteUrlById(String id){
+	public boolean deleteUrlById(Url u){
 		PreparedStatementCreatorFactory pscf=
 			new PreparedStatementCreatorFactory(
 				"DELETE FROM url WHERE id=?",Types.INTEGER);
 		PreparedStatementCreator psc= 
 			pscf.newPreparedStatementCreator(
-				Arrays.asList(id));
+				Arrays.asList(u.getId()));
 		return jd.update(psc)>0;
 	}
 	
+	// TODO put these guys in their models
 	private Url rowToUrl(ResultSet rs,int rowNum){
 		Url u=new Url();
 		try{
@@ -133,6 +135,8 @@ public class UrlRepoJdbc implements UrlRepo{
 			u.setNameSpace(rs.getString("namespace"));
 			u.setSrc(rs.getString("src"));
 			u.setDest(rs.getString("dest"));
+			u.setAccessScope(rs.getString("access_scope"));
+			u.setCreatedAt(rs.getTimestamp("created_at"));
 		}catch(SQLException sqe){
 			// TODO log exception
 			return null;
