@@ -15,9 +15,8 @@ import com.amir.usho.db.UrlAccessRepo;
 @Service
 public class UrlServiceImpl implements UrlService{
 
-	@Autowired
-	private UrlRepo urlRepo;
-	private UrlAccessRepo urlAccessRepo;
+	@Autowired private UrlRepo urlRepo;
+	@Autowired private UrlAccessRepo urlAccessRepo;
 
 	@Override
 	public List<Url> findAllUrls(){

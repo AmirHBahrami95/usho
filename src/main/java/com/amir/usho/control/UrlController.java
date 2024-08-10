@@ -1,16 +1,16 @@
 package com.amir.usho.control;
 
 import org.springframework.web.bind.annotation.*;
-
-import org.springframework.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.Optional;
 import java.util.List;
 
 import com.amir.usho.model.Url;
+import com.amir.usho.model.UrlAccess;
 import com.amir.usho.db.UrlRepo;
 import com.amir.usho.exc.WebException;
 import com.amir.usho.service.UrlService;
@@ -21,16 +21,28 @@ public class UrlController{
 
 	@Autowired
 	private UrlService urlService;
+
+	private UrlAccess makeUa(HttpServletRequest req){
+		UrlAccess ua=new UrlAccess();
+		String xff=req.getHeader("x-forwarded-for");
+		if(xff!= null){
+			ua.setXForwardedFor(xff);
+		}
+		else ua.setXForwardedFor("-");
+		ua.setIp(req.getRemoteAddr());
+		System.out.println("URL_BULLSHIT:"+ua.getXForwardedFor()+" //// "+ua.getIp());
+		return ua;
+	}
 	
 	@GetMapping(path="/{id}",produces="application/json")
-	public ResponseEntity<Url> getUrl(@PathVariable String id) throws WebException{
+	public ResponseEntity<Url> getUrl(@PathVariable String id,@Autowired HttpServletRequest req) throws WebException{
 		Url u=new Url();
 		try{
 			u.setId(Long.valueOf(id));
 		}catch(NumberFormatException nfe){
 			throw WebException.of(400,"Wrong Id Format");
 		}
-		Optional o=urlService.findUrlById(u);
+		Optional o=urlService.findUrlById(u,makeUa(req));
 		if(!o.isPresent())
 			throw WebException.of(404,"Not Found");
 		return ResponseEntity.of(o);

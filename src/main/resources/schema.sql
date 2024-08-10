@@ -35,7 +35,7 @@ CREATE TABLE url(
 CREATE TABLE url_access(
   url_id INT UNSIGNED NOT NULL,
   ip VARCHAR(128) NOT NULL, /* for both ipv4 and 6 */
-  x_forwared_for VARCHAR(128) DEFAULT NULL,
+  x_forwarded_for VARCHAR(128) DEFAULT NULL,
   visit_ts TIMESTAMP DEFAULT NOW(),
 
 	FOREIGN KEY (url_id) REFERENCES url(id)
@@ -48,7 +48,7 @@ CREATE VIEW url_access_view AS
 		u.dest AS dest,
 		u.namespace AS namespace,
 		ua.ip AS IP,
-		ua.x_forwared_for AS x_forwared_for,
+		ua.x_forwarded_for AS x_forwarded_for,
 		ua.visit_ts AS visit_ts
 	FROM 
 		url u

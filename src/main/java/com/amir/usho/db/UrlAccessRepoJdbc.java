@@ -54,7 +54,7 @@ public class UrlAccessRepoJdbc implements UrlAccessRepo{
 		PreparedStatementCreatorFactory pscf=
 			new PreparedStatementCreatorFactory(
 				"INSERT INTO url_access(url_id,ip,x_forwarded_for)"
-				+"VALUES(?,?,?) ",
+				+" VALUES(?,?,?) ",
 				Types.INTEGER,
 				Types.VARCHAR,
 				Types.VARCHAR
@@ -68,10 +68,7 @@ public class UrlAccessRepoJdbc implements UrlAccessRepo{
 					ua.getXForwardedFor())
 			);
 
-			KeyHolder kh=new GeneratedKeyHolder();
-			int nRes=jd.update(psc,kh);
-			ua.getUrl().setId(kh.getKey().longValue());
-			return nRes>=1?Optional.of(ua):Optional.empty();
+			return jd.update(psc)>=1?Optional.of(ua):Optional.empty();
 	}
 
 	private UrlAccess rowToUrlAccess(ResultSet rs,int rowNum){
